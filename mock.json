@@ -1,0 +1,7 @@
+{
+  "From": "example@example.com",
+  "To": ["example@example.com"],
+  "Subject": "golang mailer test",
+  "Body": "golang mail worker",
+  "Tag": "test"
+}
