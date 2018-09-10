@@ -13,4 +13,6 @@ type MailMsg struct {
 	Body    string   `json:"body"`
 	// Tag is not part of email, we use it for analysing
 	Tag string `json:"tag"`
+	// ID is uuid of this message
+	ID string `json:"id"`
 }

@@ -8,12 +8,14 @@ send msg to queue.
 
 ```go
 type MailMsg struct {
-	From    string   `json:"from"` // required, where the mail send from
-	To      []string `json:"to"` // required, where the mail send to
-	Subject string   `json:"subject"` // optional, email subject
-	Body    string   `json:"body"` // required, email body, plain text or html
+	From    string   `json:"from"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	Body    string   `json:"body"`
 	// Tag is not part of email, we use it for analysing
 	Tag string `json:"tag"`
+	// ID is uuid of this message
+	ID string `json:"id"`
 }
 ```
 
