@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/go-mail/mail"
 	"github.com/zcong1993/mailer/common"
@@ -30,39 +29,31 @@ func MustNewMailSender(host string, port int, username, password string) *MailSe
 }
 
 // Send impl mail sender
-func (ms *MailSender) Send(msg []byte) (error, bool) {
-	m, data, err := newMail(msg)
+func (ms *MailSender) Send(msg common.MailMsg) (error, bool) {
+	m, err := newMail(msg)
 	if err != nil {
-		logger.Error(err, data)
-		return errors.New("invalid mail. "), false
+		logger.Error(err, msg)
+		return err, false
 	}
 	err = mail.Send(ms.s, m)
 	if err != nil {
 		// TODO: make sure which should retry
-		logger.Error(err, data)
 		return err, false
 	}
-	logger.Infof("send mail %+v\n", data)
 	return nil, false
 }
 
-func newMail(msg []byte) (*mail.Message, common.MailMsg, error) {
-	var data common.MailMsg
-	err := json.Unmarshal(msg, &data)
-	if err != nil {
-		return nil, data, err
-	}
-
+func newMail(data common.MailMsg) (*mail.Message, error) {
 	if data.From == "" {
-		return nil, data, errors.New("from to is required. ")
+		return nil, errors.New("from to is required. ")
 	}
 
 	if len(data.To) == 0 {
-		return nil, data, errors.New("send to is required. ")
+		return nil, errors.New("send to is required. ")
 	}
 
 	if data.Body == "" {
-		return nil, data, errors.New("send empty to user? ")
+		return nil, errors.New("send empty to user? ")
 	}
 
 	m := mail.NewMessage()
@@ -72,5 +63,5 @@ func newMail(msg []byte) (*mail.Message, common.MailMsg, error) {
 	m.SetHeader("To", data.To...)
 	m.SetHeader("Subject", data.Subject)
 
-	return m, data, nil
+	return m, nil
 }

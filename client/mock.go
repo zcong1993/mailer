@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/zcong1993/mailer/common"
 	"math/rand"
 )
 
@@ -10,12 +11,10 @@ import (
 type MockSender struct{}
 
 // Send impl the Sender interface
-func (ms *MockSender) Send(msg []byte) (error, bool) {
-	n := string(msg)
-	println(n)
+func (ms *MockSender) Send(mail common.MailMsg) (error, bool) {
 	nn := rand.Intn(10)
 	if nn < 5 {
-		fmt.Printf("success handle work %s\n", n)
+		fmt.Printf("success handle work %v\n", mail)
 		return nil, false
 	}
 
