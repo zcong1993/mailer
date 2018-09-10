@@ -11,5 +11,6 @@ func main() {
 	qName := utils.EnvOrDefault("QUEUE_NAME", "mail")
 	sender := client.MustNewMailSender("smtp.gmail.com", 465, utils.RequiredEnv("MAIL_ACCOUNT"), utils.RequiredEnv("MAIL_PASSWORD"))
 	logger := client.NewDefaultLogger(10)
+	//mongoLogger := client.NewMongoLogger("", "mailer", "log", 10)
 	service.RunService(rabbit, qName, sender, logger)
 }
