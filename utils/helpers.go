@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 // EnvOrDefault get env by key, return default value if not set
@@ -21,4 +22,13 @@ func RequiredEnv(k string) string {
 		panic(fmt.Sprintf("env %s is required. ", k))
 	}
 	return v
+}
+
+// MustToInt convert a string to int or die
+func MustToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return i
 }
