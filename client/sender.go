@@ -37,8 +37,8 @@ func (ms *MailSender) Send(msg common.MailMsg) (error, bool) {
 	}
 	err = mail.Send(ms.s, m)
 	if err != nil {
-		// TODO: make sure which should retry
-		return err, false
+		// TODO: make sure which should retry, now always retry
+		return err, true
 	}
 	return nil, false
 }

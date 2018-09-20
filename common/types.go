@@ -25,6 +25,7 @@ type MailLog struct {
 	MailMsg
 	Requeue bool
 	Error   error
+	Retry   int
 }
 
 // Logger is logger interface for service log

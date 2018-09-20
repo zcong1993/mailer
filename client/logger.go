@@ -18,15 +18,21 @@ func NewDefaultLogger(buffer int) *DefaultLogger {
 	ch := make(chan *common.MailLog, buffer)
 	go func() {
 		for msg := range ch {
-			l := log.WithFields(log.Fields{
-				"ID":  msg.ID,
-				"To":  msg.To,
-				"Tag": msg.Tag,
-			})
 			if msg.Error == nil {
+				l := log.WithFields(log.Fields{
+					"ID":  msg.ID,
+					"To":  msg.To,
+					"Tag": msg.Tag,
+				})
 				l.Infof("success")
 			} else {
-				l.WithField("requeue", msg.Requeue)
+				l := log.WithFields(log.Fields{
+					"ID":      msg.ID,
+					"To":      msg.To,
+					"Tag":     msg.Tag,
+					"Requeue": msg.Requeue,
+					"Retry":   msg.Retry,
+				})
 				l.Error(msg.Error.Error())
 			}
 		}

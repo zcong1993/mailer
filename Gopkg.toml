@@ -30,6 +30,14 @@
   version = "1.0.6"
 
 [[constraint]]
+  name = "github.com/apex/log"
+  version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/globalsign/mgo"
+
+[[constraint]]
   name = "github.com/go-mail/mail"
   version = "2.2.0"
 
@@ -40,6 +48,14 @@
 [[constraint]]
   branch = "master"
   name = "github.com/streadway/amqp"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/zcong1993/amqp-helpers"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/zcong1993/debugo"
 
 [prune]
   go-tests = true
