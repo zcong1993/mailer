@@ -10,23 +10,25 @@ import (
 	"github.com/zcong1993/mailer/utils"
 )
 
-var RouterKeys = []string{"mail"}
+var RouterKeys = []string{""}
 
 var debug = debugo.NewDebug("queue")
 
 // RunService run a mail sender consumer
-func RunService(url, exchange, retryExchange string, sender common.Sender, logger common.Logger, maxRetry int) {
+func RunService(url, exchange, retryExchange, qName string, sender common.Sender, logger common.Logger, maxRetry int) {
+	args := amqp.Table{"x-dead-letter-exchange": exchange}
+
 	conn := helpers.MustDeclareConn(url)
 	ch := helpers.MustDeclareExchange(conn, exchange, nil)
 	waitCh := helpers.MustDeclareExchange(conn, retryExchange, nil)
 
-	helpers.MustBindQueue(waitCh, retryExchange, RouterKeys, amqp.Table{"x-dead-letter-exchange": exchange})
+	helpers.MustBindQueue(waitCh, retryExchange, qName, RouterKeys, args)
 
 	defer conn.Close()
 	defer ch.Close()
 	defer waitCh.Close()
 
-	_, msgs := helpers.MustDeclareConsumer(ch, exchange, RouterKeys)
+	_, msgs := helpers.MustDeclareConsumer(ch, exchange, qName, RouterKeys, args)
 
 	l := logger.GetChannel()
 
