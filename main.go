@@ -8,7 +8,7 @@ import (
 
 func main() {
 	rabbit := utils.EnvOrDefault("RABBIT", "amqp://guest:guest@localhost:5672/")
-	exchangeName := utils.EnvOrDefault("EXCHANGE_NAME", "mail.exchange")
+	exchangeName := utils.EnvOrDefault("EXCHANGE_NAME", "mail")
 	retryExchangeName := utils.EnvOrDefault("RETRY_EXCHANGE_NAME", "mail_retry")
 	qName := utils.EnvOrDefault("QUEUE_NAME", "mail")
 	sender := client.MustNewMailSender(utils.EnvOrDefault("SMTP_HOST", "smtp.gmail.com"), utils.MustToInt(utils.EnvOrDefault("SMTP_PORT", "465")), utils.RequiredEnv("MAIL_ACCOUNT"), utils.RequiredEnv("MAIL_PASSWORD"))
