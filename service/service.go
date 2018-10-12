@@ -2,95 +2,50 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/streadway/amqp"
-	"github.com/zcong1993/amqp-helpers"
+	"github.com/zcong1993/amqp-retry-worker"
 	"github.com/zcong1993/debugo"
 	"github.com/zcong1993/mailer/common"
-	"github.com/zcong1993/mailer/utils"
 )
 
 var RouterKeys = []string{""}
 
 var debug = debugo.NewDebug("queue")
 
-// RunService run a mail sender consumer
-func RunService(url, exchange, retryExchange, qName string, sender common.Sender, logger common.Logger, maxRetry int) {
-	args := amqp.Table{"x-dead-letter-exchange": exchange}
+type Worker struct {
+	Sender common.Sender
+	Logger common.Logger
+}
 
-	conn := helpers.MustDeclareConn(url)
-	ch := helpers.MustDeclareExchange(conn, exchange, nil)
-	waitCh := helpers.MustDeclareExchange(conn, retryExchange, nil)
-
-	helpers.MustBindQueue(waitCh, retryExchange, qName, RouterKeys, args)
-
-	defer conn.Close()
-	defer ch.Close()
-	defer waitCh.Close()
-
-	_, msgs := helpers.MustDeclareConsumer(ch, exchange, qName, RouterKeys, args)
-
-	l := logger.GetChannel()
-
-	for msg := range msgs {
-		var m common.MailMsg
-		err := json.Unmarshal(msg.Body, &m)
-		if err != nil {
-			l <- &common.MailLog{
-				MailMsg: m,
-				Error:   err,
-			}
-			continue
+func (w *Worker) Do(payload []byte, routerKey string) (error, bool) {
+	l := w.Logger.GetChannel()
+	var msg common.MailMsg
+	err := json.Unmarshal(payload, &msg)
+	if err != nil {
+		l <- &common.MailLog{
+			MailMsg: msg,
+			Error:   err,
 		}
-		err, requeue := sender.Send(m)
-		if err == nil {
-			msg.Ack(false)
-			l <- &common.MailLog{
-				MailMsg: m,
-			}
-			continue
+		return err, false
+	}
+	err, retry := w.Sender.Send(msg)
+	if err != nil {
+		logMsg := &common.MailLog{
+			MailMsg: msg,
+			Error:   err,
 		}
-		if err != nil {
-
-			logMsg := &common.MailLog{
-				MailMsg: m,
-				Requeue: requeue,
-				Error:   err,
-				Retry:   0,
-			}
-			if !requeue {
-				debug.Debugf("not requeue")
-				msg.Nack(false, false)
-				l <- logMsg
-				continue
-			}
-
-			p := helpers.CopyMsgToPublishing(msg)
-
-			h := helpers.ParseDeathHeader(p.Headers)
-
-			if h == nil {
-				p.Expiration = "3000"
-				logMsg.Retry = 1
-				debug.Debugf("first retry %s", p.Expiration)
-			} else {
-				c := h.Count + 1
-				logMsg.Retry = c
-				if c > maxRetry {
-					debug.Debugf("hit max try %d, max is %d", c, maxRetry)
-					msg.Nack(false, false)
-					l <- logMsg
-					continue
-				}
-				ex := utils.MustToInt(h.OriginalExpiration) * 3
-				p.Expiration = fmt.Sprintf("%d", ex)
-
-				debug.Debugf("retry %d - %s", c, p.Expiration)
-			}
-
-			waitCh.Publish(retryExchange, msg.RoutingKey, false, false, *p)
-			msg.Ack(false)
-			l <- logMsg
+		l <- logMsg
+	} else {
+		l <- &common.MailLog{
+			MailMsg: msg,
 		}
 	}
+
+	return err, retry
+}
+
+// RunService run a mail sender consumer
+func RunService(url, exchange, retryExchange, qName string, sender common.Sender, logger common.Logger, maxRetry int) {
+	bf := worker.NewDefaultBackoff(10000)
+	w := worker.NewRetryWorker(url, exchange, qName, RouterKeys, &Worker{Sender: sender, Logger: logger}, bf, maxRetry, false)
+	w.Run()
 }

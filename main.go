@@ -14,5 +14,5 @@ func main() {
 	sender := client.MustNewMailSender(utils.EnvOrDefault("SMTP_HOST", "smtp.gmail.com"), utils.MustToInt(utils.EnvOrDefault("SMTP_PORT", "465")), utils.RequiredEnv("MAIL_ACCOUNT"), utils.RequiredEnv("MAIL_PASSWORD"))
 	logger := client.NewDefaultLogger(10)
 	//mockSender := &client.MockSender{}
-	service.RunService(rabbit, exchangeName, retryExchangeName, qName, sender, logger, 3)
+	service.RunService(rabbit, exchangeName, retryExchangeName, qName, sender, logger, utils.MustToInt(utils.EnvOrDefault("MAX_RETRY", "2")))
 }
