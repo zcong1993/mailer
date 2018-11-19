@@ -5,11 +5,13 @@ import (
 	"github.com/zcong1993/amqp-retry-worker"
 	"github.com/zcong1993/debugo"
 	"github.com/zcong1993/mailer/common"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 var RouterKeys = []string{""}
 
 var debug = debugo.NewDebug("queue")
+var validate = validator.New()
 
 type Worker struct {
 	Sender common.Sender
@@ -20,6 +22,14 @@ func (w *Worker) Do(payload []byte, routerKey string) (error, bool) {
 	l := w.Logger.GetChannel()
 	var msg common.MailMsg
 	err := json.Unmarshal(payload, &msg)
+	if err != nil {
+		l <- &common.MailLog{
+			MailMsg: msg,
+			Error:   err,
+		}
+		return err, false
+	}
+	err = validate.Struct(msg)
 	if err != nil {
 		l <- &common.MailLog{
 			MailMsg: msg,

@@ -10,14 +10,14 @@ type Sender interface {
 
 // MailMsg is msg we received from rabbit mq
 type MailMsg struct {
-	From    string   `json:"from"`
-	To      []string `json:"to"`
+	From    string   `json:"from" validate:"required,email"`
+	To      []string `json:"to" validate:"required,dive,email"`
 	Subject string   `json:"subject"`
-	Body    string   `json:"body"`
+	Body    string   `json:"body" validate:"required"`
 	// Tag is not part of email, we use it for analysing
 	Tag string `json:"tag"`
 	// ID is uuid of this message
-	ID string `json:"id"`
+	ID string `json:"id" validate:"required"`
 }
 
 // MailLog is struct of mail log
