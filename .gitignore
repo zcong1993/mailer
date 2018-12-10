@@ -33,3 +33,4 @@ vendor
 
 coverage.txt
 .mailgun
+.envc

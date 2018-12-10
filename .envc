@@ -1,5 +1,0 @@
-DEBUG=false
-MAIL_ACCOUNT=huangxin@tictalk.com
-MAIL_PASSWORD=yuku.666
-SMTP_HOST=smtp587.sendcloud.net
-RABBIT=amqp://guest:guest@192.168.8.230:5672/
